@@ -20,7 +20,7 @@ st.caption("Instantly gauge how customers feel about your products.")
 col1, col2 = st.columns(2)
 
 with col1:
-    if st.button("📥 Ingest Dataset"):
+    if st.button("📥 Load Sample Data"):
         try:
             st.session_state["df"] = pd.read_csv("customer_reviews.csv")
             st.success("Dataset loaded successfully!")
@@ -28,7 +28,7 @@ with col1:
             st.error("Dataset not found. Please check the file path.")
 
 with col2:
-    if st.button("🧹 Parse Reviews"):
+    if st.button("🧹 Clean & Prep Data"):
         if "df" in st.session_state:
             st.session_state["df"]["CLEANED_SUMMARY"] = st.session_state["df"]["SUMMARY"].apply(
                 clean_text)
@@ -55,5 +55,6 @@ if "df" in st.session_state:
     grouped = st.session_state["df"].groupby(
         ["PRODUCT"])["SENTIMENT_SCORE"].mean()
     st.bar_chart(grouped)
+
 
 
