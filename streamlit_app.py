@@ -3,7 +3,10 @@ import streamlit as st
 import pandas as pd
 import re
 import os
+from pathlib import Path
 
+# CSV lives next to this file (works locally & on Streamlit Cloud)
+DATA_PATH = Path(__file__).parent / "customer_reviews.csv"
 
 # Helper function to clean text
 def clean_text(text):
@@ -22,7 +25,7 @@ col1, col2 = st.columns(2)
 with col1:
     if st.button("📥 Load Sample Data"):
         try:
-            st.session_state["df"] = pd.read_csv("customer_reviews.csv")
+            st.session_state["df"] = pd.read_csv(DATA_PATH)
             st.success("Dataset loaded successfully!")
         except FileNotFoundError:
             st.error("Dataset not found. Please check the file path.")
@@ -55,6 +58,7 @@ if "df" in st.session_state:
     grouped = st.session_state["df"].groupby(
         ["PRODUCT"])["SENTIMENT_SCORE"].mean()
     st.bar_chart(grouped)
+
 
 
 
