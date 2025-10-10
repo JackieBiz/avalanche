@@ -5,7 +5,7 @@ import re
 import os
 from pathlib import Path
 
-st.set_page_config(page_title="Avalanche — Sentiment Insights", page_icon="📈", layout="wide")
+st.set_page_config(page_title="Avalanche — Sentiment Insights", page_icon="📈")
 
 # --- above-the-fold content ---
 st.title("Avalanche, Inc.")
@@ -65,6 +65,7 @@ if "df" in st.session_state:
     grouped = st.session_state["df"].groupby(
         ["PRODUCT"])["SENTIMENT_SCORE"].mean()
     st.bar_chart(grouped)
+
 
 
 
