@@ -2,116 +2,82 @@
 import streamlit as st
 import pandas as pd
 import re
-import os
 from pathlib import Path
 
+# ---------- page config ----------
 st.set_page_config(page_title="Avalanche — Sentiment Insights", page_icon="📈")
 
-# Responsive spacing + heading sizes
+# ---------- responsive spacing & style ----------
 st.markdown(
     """
     <style>
-      /* pull content up a bit */
       .block-container { padding-top: 0.75rem; }
-
-      /* smaller top/bottom margins on headings */
-      h1 { margin-top: 0.25rem; margin-bottom: 0.5rem; }
-      h2 { margin-top: 0.25rem; margin-bottom: 0.5rem; }
-
-      /* responsive heading sizes so they don't look cut off on laptops */
-      h1 { font-size: clamp(1.75rem, 4vw + 0.25rem, 3rem); }
-      h2 { font-size: clamp(1.25rem, 2.6vw + 0.25rem, 2rem); }
-
-      /* keep some side padding on narrower screens */
-      @media (max-width: 1200px) {
-        .block-container { padding-left: 1rem; padding-right: 1rem; }
-      }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-# --- above-the-fold content ---
-st.title("Avalanche, Inc.")
-st.subheader("Customer Sentiment Insights")
-st.caption("Instantly gauge how customers feel about your products.")
-
-# --- polish: rounded corners for images (applies to all st.image) ---
-st.markdown(
-    """
-    <style>
+      h1 { margin-top: 0.25rem; margin-bottom: 0.5rem; font-size: clamp(1.75rem, 4vw + 0.25rem, 3rem); }
+      h2 { margin-top: 0.25rem; margin-bottom: 0.5rem; font-size: clamp(1.25rem, 2.6vw + 0.25rem, 2rem); }
+      @media (max-width: 1200px) { .block-container { padding-left: 1rem; padding-right: 1rem; } }
       .stImage img { border-radius: 8px; }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# Centered header image (desktop centered, mobile full-width)
-hero_img = Path(__file__).parent / "images" / "app_screenshot.png"
-left, mid, right = st.columns([1, 8, 1])  # wide center column
-with mid:
-    if hero_img.exists():
-        st.image(str(hero_img), width=900, caption="App overview")  # Streamlit scales down on mobile
+# ---------- header ----------
+st.title("Avalanche, Inc.")
+st.subheader("Customer Sentiment Insights")
+st.caption("Instantly gauge how customers feel about your products.")
 
 # CSV lives next to this file (works locally & on Streamlit Cloud)
 DATA_PATH = Path(__file__).parent / "customer_reviews.csv"
 
-# Helper function to clean text
-def clean_text(text):
+# ---------- helpers ----------
+def clean_text(text: str) -> str:
     text = text.lower().strip()
-    text = re.sub(r'[^\w\s]', '', text)
+    text = re.sub(r"[^\w\s]", "", text)
     return text
 
-# Layout two buttons side by side
+# ---------- CTAs (keep above the fold) ----------
 col1, col2 = st.columns(2)
-
 with col1:
-    if st.button("📥 Load Sample Data"):
-        try:
-            st.session_state["df"] = pd.read_csv(DATA_PATH)
-            st.success("Dataset loaded successfully!")
-        except FileNotFoundError:
-            st.error("Dataset not found. Please check the file path.")
-
+    load_clicked = st.button("📥 Load Sample Data")
 with col2:
-    if st.button("🧹 Clean & Prep Data"):
-        if "df" in st.session_state:
-            st.session_state["df"]["CLEANED_SUMMARY"] = st.session_state["df"]["SUMMARY"].apply(
-                clean_text)
-            st.success("Reviews parsed and cleaned!")
-        else:
-            st.warning("Please ingest the dataset first.")
+    clean_clicked = st.button("🧹 Clean & Prep Data", disabled=("df" not in st.session_state))
 
-# Display the dataset if it exists
+# ---------- hero image (hidden after data load) ----------
+hero_ph = st.empty()
+with hero_ph.container():
+    hero_img = Path(__file__).parent / "images" / "app_screenshot.png"
+    left, mid, right = st.columns([1, 8, 1])
+    with mid:
+        if hero_img.exists():
+            st.image(str(hero_img), use_container_width=True, caption="App overview")
+
+# ---------- button actions ----------
+if load_clicked:
+    try:
+        st.session_state["df"] = pd.read_csv(DATA_PATH)
+        hero_ph.empty()  # hide the hero after data is loaded
+        st.success(f"Dataset loaded from: {DATA_PATH.name}")
+    except FileNotFoundError:
+        st.error(f"Dataset not found at: {DATA_PATH}")
+
+if clean_clicked and "df" in st.session_state:
+    st.session_state["df"]["CLEANED_SUMMARY"] = st.session_state["df"]["SUMMARY"].apply(clean_text)
+    st.success("Data cleaned. You can filter and explore below.")
+
+# ---------- main content ----------
 if "df" in st.session_state:
-    # Product filter dropdown
+    df = st.session_state["df"]
+
     st.subheader("🔍 Filter by Product")
-    product = st.selectbox("Choose a product", [
-                           "All Products"] + list(st.session_state["df"]["PRODUCT"].unique()))
+    products = sorted(df["PRODUCT"].dropna().unique().tolist())
+    product = st.selectbox("Choose a product", ["All Products"] + products)
+
     st.subheader(f"📁 Reviews for {product}")
+    filtered = df if product == "All Products" else df[df["PRODUCT"] == product]
+    st.dataframe(filtered, use_container_width=True)
 
-    if product != "All Products":
-        filtered_df = st.session_state["df"][st.session_state["df"]
-                                             ["PRODUCT"] == product]
-    else:
-        filtered_df = st.session_state["df"]
-    st.dataframe(filtered_df)
-
-    st.subheader("Sentiment Score by Product")
-    grouped = st.session_state["df"].groupby(
-        ["PRODUCT"])["SENTIMENT_SCORE"].mean()
+    st.subheader("📊 Sentiment Score by Product")
+    grouped = df.groupby("PRODUCT", dropna=True)["SENTIMENT_SCORE"].mean().sort_values(ascending=False)
     st.bar_chart(grouped)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+else:
+    st.info("Click **📥 Load Sample Data** to get started.")
