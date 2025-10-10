@@ -20,6 +20,10 @@ st.title("Avalanche, Inc.")
 st.subheader("Customer Sentiment Insights")
 st.caption("Instantly gauge how customers feel about your products.")
 
+# Show a header image if available (helps Streamlit capture a thumbnail)
+hero_img = Path(__file__).parent / "images" / "app_screenshot.png"
+if hero_img.exists():
+    st.image(str(hero_img), use_column_width=True)
 
 # Layout two buttons side by side
 col1, col2 = st.columns(2)
@@ -60,6 +64,7 @@ if "df" in st.session_state:
     grouped = st.session_state["df"].groupby(
         ["PRODUCT"])["SENTIMENT_SCORE"].mean()
     st.bar_chart(grouped)
+
 
 
 
