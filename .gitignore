@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.pyo
+
+# Virtual envs
+.venv/
+env/
+venv/
+
+# Editors/OS
+.vscode/
+.DS_Store
+
+# Streamlit
+.streamlit/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Secrets (if you ever add one)
+.env
