@@ -1,3 +1,5 @@
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://avalanche-lab.streamlit.app/)
+
 # Avalanche, Inc. — Customer Sentiment Insights
 
 A tiny Streamlit app to explore customer review sentiment for **Avalanche, Inc.**  
