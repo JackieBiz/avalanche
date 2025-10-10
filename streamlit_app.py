@@ -7,6 +7,26 @@ from pathlib import Path
 
 st.set_page_config(page_title="Avalanche — Sentiment Insights", page_icon="📈")
 
+# tighten the top spacing (less empty space above the title)
+st.markdown(
+    """
+    <style>
+      /* pull content up */
+      .block-container { padding-top: 0.5rem; }
+
+      /* reduce default top/bottom margins on H1/H2 */
+      h1 { margin-top: 0.25rem; margin-bottom: 0.5rem; }
+      h2 { margin-top: 0.25rem; margin-bottom: 0.5rem; }
+
+      /* optional: keep a bit of side padding on small screens */
+      @media (max-width: 1200px) {
+        .block-container { padding-left: 1rem; padding-right: 1rem; }
+      }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 # --- above-the-fold content ---
 st.title("Avalanche, Inc.")
 st.subheader("Customer Sentiment Insights")
@@ -77,6 +97,7 @@ if "df" in st.session_state:
     grouped = st.session_state["df"].groupby(
         ["PRODUCT"])["SENTIMENT_SCORE"].mean()
     st.bar_chart(grouped)
+
 
 
 
