@@ -7,18 +7,22 @@ from pathlib import Path
 
 st.set_page_config(page_title="Avalanche — Sentiment Insights", page_icon="📈")
 
-# tighten the top spacing (less empty space above the title)
+# Responsive spacing + heading sizes
 st.markdown(
     """
     <style>
-      /* pull content up */
-      .block-container { padding-top: 0.5rem; }
+      /* pull content up a bit */
+      .block-container { padding-top: 0.75rem; }
 
-      /* reduce default top/bottom margins on H1/H2 */
+      /* smaller top/bottom margins on headings */
       h1 { margin-top: 0.25rem; margin-bottom: 0.5rem; }
       h2 { margin-top: 0.25rem; margin-bottom: 0.5rem; }
 
-      /* optional: keep a bit of side padding on small screens */
+      /* responsive heading sizes so they don't look cut off on laptops */
+      h1 { font-size: clamp(1.75rem, 4vw + 0.25rem, 3rem); }
+      h2 { font-size: clamp(1.25rem, 2.6vw + 0.25rem, 2rem); }
+
+      /* keep some side padding on narrower screens */
       @media (max-width: 1200px) {
         .block-container { padding-left: 1rem; padding-right: 1rem; }
       }
@@ -97,6 +101,7 @@ if "df" in st.session_state:
     grouped = st.session_state["df"].groupby(
         ["PRODUCT"])["SENTIMENT_SCORE"].mean()
     st.bar_chart(grouped)
+
 
 
 
