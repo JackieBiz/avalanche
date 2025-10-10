@@ -12,6 +12,13 @@ st.title("Avalanche, Inc.")
 st.subheader("Customer Sentiment Insights")
 st.caption("Instantly gauge how customers feel about your products.")
 
+# Centered, responsive header image (desktop: centered; mobile: full width)
+hero_img = Path(__file__).parent / "images" / "app_screenshot.png"
+left, mid, right = st.columns([1, 3, 1])
+with mid:
+    if hero_img.exists():
+        st.image(str(hero_img), caption="App overview", use_container_width=True)
+
 # CSV lives next to this file (works locally & on Streamlit Cloud)
 DATA_PATH = Path(__file__).parent / "customer_reviews.csv"
 
@@ -20,11 +27,6 @@ def clean_text(text):
     text = text.lower().strip()
     text = re.sub(r'[^\w\s]', '', text)
     return text
-
-# Show a header image if available (helps Streamlit capture a thumbnail)
-hero_img = Path(__file__).parent / "images" / "app_screenshot.png"
-if hero_img.exists():
-    st.image(str(hero_img), caption="App overview", width=900)  # adjust 700–1000 as you like
 
 # Layout two buttons side by side
 col1, col2 = st.columns(2)
@@ -65,6 +67,7 @@ if "df" in st.session_state:
     grouped = st.session_state["df"].groupby(
         ["PRODUCT"])["SENTIMENT_SCORE"].mean()
     st.bar_chart(grouped)
+
 
 
 
