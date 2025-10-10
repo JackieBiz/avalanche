@@ -12,12 +12,28 @@ st.title("Avalanche, Inc.")
 st.subheader("Customer Sentiment Insights")
 st.caption("Instantly gauge how customers feel about your products.")
 
+# --- polish: rounded corners for images (applies to all st.image) ---
+st.markdown(
+    """
+    <style>
+      .stImage img { border-radius: 8px; }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# tiny spacer so the image doesn't crowd the caption
+st.markdown("&nbsp;")
+
 # Centered header image (desktop centered, mobile full-width)
 hero_img = Path(__file__).parent / "images" / "app_screenshot.png"
-left, mid, right = st.columns([1, 8, 1])  # wider center column
+left, mid, right = st.columns([1, 8, 1])  # wide center column
 with mid:
     if hero_img.exists():
-        st.image(str(hero_img), width=900)  # nicely sized; Streamlit caps to container on small screens
+        st.image(str(hero_img), width=900, caption="App overview")  # Streamlit scales down on mobile
+
+# optional extra spacer after the image
+st.write("")
 
 # CSV lives next to this file (works locally & on Streamlit Cloud)
 DATA_PATH = Path(__file__).parent / "customer_reviews.csv"
@@ -67,6 +83,7 @@ if "df" in st.session_state:
     grouped = st.session_state["df"].groupby(
         ["PRODUCT"])["SENTIMENT_SCORE"].mean()
     st.bar_chart(grouped)
+
 
 
 
