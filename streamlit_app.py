@@ -31,11 +31,10 @@ if "df_loaded" not in st.session_state:
     st.session_state.df_loaded = False
 if "clean_done" not in st.session_state:
     st.session_state.clean_done = False
-# optional: keep df key predictable
 if "df" not in st.session_state:
     st.session_state.df = None
 
-# CSV lives next to this file (works locally & on Streamlit Cloud)
+# CSV path (works locally & on Streamlit Cloud)
 DATA_PATH = Path(__file__).parent / "customer_reviews.csv"
 
 # ---------- helpers ----------
@@ -44,29 +43,22 @@ def clean_text(text: str) -> str:
     text = re.sub(r"[^\w\s]", "", text)
     return text
 
-# ---------- CTAs (keep above the fold) ----------
+# ---------- CTAs (draw first) ----------
 col1, col2 = st.columns(2)
 with col1:
     load_clicked = st.button("📥 Load Sample Data")
 with col2:
-    clean_disabled = not st.session_state.df_loaded
-    clean_clicked = st.button("🧹 Clean & Prep Data", disabled=clean_disabled)
+    clean_clicked = st.button("🧹 Clean & Prep Data", disabled=not st.session_state.df_loaded)
 
-# ---------- hero image (only BEFORE data is loaded) ----------
-if not st.session_state.df_loaded:
-    hero_img = Path(__file__).parent / "images" / "app_screenshot.png"
-    left, mid, right = st.columns([1, 8, 1])
-    with mid:
-        if hero_img.exists():
-            st.image(str(hero_img), use_container_width=True, caption="App overview")
-
-# ---------- button actions ----------
+# ---------- handle actions (update state FIRST) ----------
 if load_clicked:
     try:
         st.session_state.df = pd.read_csv(DATA_PATH)
-        st.session_state.df_loaded = True      # <-- flag drives UI
-        st.session_state.clean_done = False    # reset any previous clean state
+        st.session_state.df_loaded = True
+        st.session_state.clean_done = False
+        # immediately refresh UI so the hero vanishes and the Clean button enables
         st.success(f"Dataset loaded from: {DATA_PATH.name}")
+        st.rerun()
     except FileNotFoundError:
         st.error(f"Dataset not found at: {DATA_PATH}")
 
@@ -74,6 +66,14 @@ if clean_clicked and st.session_state.df_loaded and st.session_state.df is not N
     st.session_state.df["CLEANED_SUMMARY"] = st.session_state.df["SUMMARY"].apply(clean_text)
     st.session_state.clean_done = True
     st.success("Data cleaned. You can filter and explore below.")
+
+# ---------- hero image (render ONLY after actions, and only if not loaded) ----------
+if not st.session_state.df_loaded:
+    hero_img = Path(__file__).parent / "images" / "app_screenshot.png"
+    left, mid, right = st.columns([1, 8, 1])
+    with mid:
+        if hero_img.exists():
+            st.image(str(hero_img), use_container_width=True, caption="App overview")
 
 # ---------- main content ----------
 if st.session_state.df_loaded and st.session_state.df is not None:
