@@ -1,4 +1,8 @@
-# import packages
+# -----------------------------
+# Avalanche, Inc. — Sentiment Insights (Streamlit)
+# -----------------------------
+
+# imports
 import streamlit as st
 import pandas as pd
 import re
@@ -34,14 +38,31 @@ if "clean_done" not in st.session_state:
 if "df" not in st.session_state:
     st.session_state.df = None
 
-# CSV path (works locally & on Streamlit Cloud)
-DATA_PATH = Path(__file__).parent / "customer_reviews.csv"
-
 # ---------- helpers ----------
 def clean_text(text: str) -> str:
     text = text.lower().strip()
     text = re.sub(r"[^\w\s]", "", text)
     return text
+
+def flash(kind: str, msg: str):
+    """Store a one-shot message to show on the next rerun."""
+    st.session_state._flash = (kind, msg)
+
+def show_flash_if_any():
+    if "_flash" in st.session_state:
+        kind, msg = st.session_state._flash
+        if kind == "success":
+            st.success(msg)
+        elif kind == "info":
+            st.info(msg)
+        elif kind == "warning":
+            st.warning(msg)
+        elif kind == "error":
+            st.error(msg)
+        del st.session_state._flash
+
+# CSV path (works locally & on Streamlit Cloud)
+DATA_PATH = Path(__file__).parent / "customer_reviews.csv"
 
 # ---------- CTAs (draw first) ----------
 col1, col2 = st.columns(2)
@@ -50,24 +71,28 @@ with col1:
 with col2:
     clean_clicked = st.button("🧹 Clean & Prep Data", disabled=not st.session_state.df_loaded)
 
+# show any stored banner from the previous run
+show_flash_if_any()
+
 # ---------- handle actions (update state FIRST) ----------
 if load_clicked:
     try:
         st.session_state.df = pd.read_csv(DATA_PATH)
         st.session_state.df_loaded = True
         st.session_state.clean_done = False
-        # immediately refresh UI so the hero vanishes and the Clean button enables
-        st.success(f"Dataset loaded from: {DATA_PATH.name}")
-        st.rerun()
+        flash("success", f"Dataset loaded from: {DATA_PATH.name}")
+        st.rerun()  # immediately refresh UI so hero disappears & button enables
     except FileNotFoundError:
-        st.error(f"Dataset not found at: {DATA_PATH}")
+        flash("error", f"Dataset not found at: {DATA_PATH}")
+        st.rerun()
 
 if clean_clicked and st.session_state.df_loaded and st.session_state.df is not None:
     st.session_state.df["CLEANED_SUMMARY"] = st.session_state.df["SUMMARY"].apply(clean_text)
     st.session_state.clean_done = True
-    st.success("Data cleaned. You can filter and explore below.")
+    flash("success", "Data cleaned. You can filter and explore below.")
+    st.rerun()
 
-# ---------- hero image (render ONLY after actions, and only if not loaded) ----------
+# ---------- hero image (render ONLY if not loaded) ----------
 if not st.session_state.df_loaded:
     hero_img = Path(__file__).parent / "images" / "app_screenshot.png"
     left, mid, right = st.columns([1, 8, 1])
