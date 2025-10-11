@@ -26,6 +26,15 @@ st.title("Avalanche, Inc.")
 st.subheader("Customer Sentiment Insights")
 st.caption("Instantly gauge how customers feel about your products.")
 
+# ---------- app state ----------
+if "df_loaded" not in st.session_state:
+    st.session_state.df_loaded = False
+if "clean_done" not in st.session_state:
+    st.session_state.clean_done = False
+# optional: keep df key predictable
+if "df" not in st.session_state:
+    st.session_state.df = None
+
 # CSV lives next to this file (works locally & on Streamlit Cloud)
 DATA_PATH = Path(__file__).parent / "customer_reviews.csv"
 
@@ -40,11 +49,11 @@ col1, col2 = st.columns(2)
 with col1:
     load_clicked = st.button("📥 Load Sample Data")
 with col2:
-    clean_clicked = st.button("🧹 Clean & Prep Data", disabled=("df" not in st.session_state))
+    clean_disabled = not st.session_state.df_loaded
+    clean_clicked = st.button("🧹 Clean & Prep Data", disabled=clean_disabled)
 
-# ---------- hero image (hidden after data load) ----------
-hero_ph = st.empty()
-with hero_ph.container():
+# ---------- hero image (only BEFORE data is loaded) ----------
+if not st.session_state.df_loaded:
     hero_img = Path(__file__).parent / "images" / "app_screenshot.png"
     left, mid, right = st.columns([1, 8, 1])
     with mid:
@@ -54,25 +63,29 @@ with hero_ph.container():
 # ---------- button actions ----------
 if load_clicked:
     try:
-        st.session_state["df"] = pd.read_csv(DATA_PATH)
-        hero_ph.empty()  # hide the hero after data is loaded
+        st.session_state.df = pd.read_csv(DATA_PATH)
+        st.session_state.df_loaded = True      # <-- flag drives UI
+        st.session_state.clean_done = False    # reset any previous clean state
         st.success(f"Dataset loaded from: {DATA_PATH.name}")
     except FileNotFoundError:
         st.error(f"Dataset not found at: {DATA_PATH}")
 
-if clean_clicked and "df" in st.session_state:
-    st.session_state["df"]["CLEANED_SUMMARY"] = st.session_state["df"]["SUMMARY"].apply(clean_text)
+if clean_clicked and st.session_state.df_loaded and st.session_state.df is not None:
+    st.session_state.df["CLEANED_SUMMARY"] = st.session_state.df["SUMMARY"].apply(clean_text)
+    st.session_state.clean_done = True
     st.success("Data cleaned. You can filter and explore below.")
 
 # ---------- main content ----------
-if "df" in st.session_state:
-    df = st.session_state["df"]
+if st.session_state.df_loaded and st.session_state.df is not None:
+    df = st.session_state.df
 
     st.subheader("🔍 Filter by Product")
     products = sorted(df["PRODUCT"].dropna().unique().tolist())
     product = st.selectbox("Choose a product", ["All Products"] + products)
 
-    st.subheader(f"📁 Reviews for {product}")
+    title = "All Products" if product == "All Products" else product
+    st.subheader(f"📁 Reviews for {title}")
+
     filtered = df if product == "All Products" else df[df["PRODUCT"] == product]
     st.dataframe(filtered, use_container_width=True)
 
