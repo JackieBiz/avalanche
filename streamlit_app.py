@@ -1,9 +1,7 @@
 """
 Avalanche — Customer Sentiment Insights (Streamlit)
 
-This version fixes mojibake from a bad copy/paste and guarantees
-an immediate first-frame render (banner image or info message) so
-Streamlit Cloud can capture the profile thumbnail.
+Clean first-frame render for Streamlit Cloud thumbnail + small UI polish.
 """
 
 import streamlit as st
@@ -136,7 +134,7 @@ def add_quick_sentiment(df: pd.DataFrame, text_col: str) -> pd.DataFrame:
 # ---------- actions ----------
 col1, col2 = st.columns([1, 1])
 with col1:
-    if st.button("Load Sample Data"):
+    if st.button("📂 Load Sample Data"):
         ss.show_banner = False
         banner_slot.empty()
 
@@ -152,7 +150,7 @@ with col1:
         ss.clean_done = False  # reset cleaned view
 
 with col2:
-    if st.button("Clean & Generate Sentiment", disabled=not ss.df_loaded):
+    if st.button("✨ Clean & Generate Sentiment", disabled=not ss.df_loaded):
         ss.show_banner = False
         banner_slot.empty()
 
@@ -164,6 +162,14 @@ with col2:
 st.caption(
     "Tip: ‘Load Sample Data’ shows the raw file. ‘Clean & Generate Sentiment’ prepares text and computes a quick score."
 )
+
+# ---------- sidebar about ----------
+with st.sidebar:
+    st.header("About")
+    st.write(
+        "Explore Avalanche customer review sentiment. Load a CSV, clean text, and see product‑level sentiment using a quick heuristic (no API key)."
+    )
+    st.markdown("[Open on Streamlit Cloud](https://avalanche-lab.streamlit.app/)")
 
 
 # ---------- view logic (single section at a time) ----------
@@ -198,3 +204,4 @@ elif ss.df_loaded and ss.df_raw is not None:
 
 else:
     st.info("Click ‘Load Sample Data’ to get started.")
+
