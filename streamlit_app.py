@@ -169,7 +169,14 @@ with st.sidebar:
     st.write(
         "Explore Avalanche customer review sentiment. Load a CSV, clean text, and see product‑level sentiment using a quick heuristic (no API key)."
     )
-    st.markdown("[Open on Streamlit Cloud](https://avalanche-lab.streamlit.app/)")
+    st.markdown(
+        '<a href="https://avalanche-lab.streamlit.app/" target="_blank">Open on Streamlit Cloud ↗</a>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        '<a href="https://github.com/JackieBiz/avalanche" target="_blank">View source on GitHub ↗</a>',
+        unsafe_allow_html=True,
+    )
 
 
 # ---------- view logic (single section at a time) ----------
@@ -204,4 +211,3 @@ elif ss.df_loaded and ss.df_raw is not None:
 
 else:
     st.info("Click ‘Load Sample Data’ to get started.")
-
