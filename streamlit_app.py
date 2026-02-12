@@ -191,9 +191,9 @@ if ss.clean_done and ss.df_clean is not None:
     view = ss.df_clean if choice == "All Products" else ss.df_clean[ss.df_clean[product_col].astype(str) == choice]
 
     grouped = ss.df_clean.groupby(product_col, dropna=True)["SENTIMENT_SCORE"].mean().sort_values(ascending=False)
-    st.bar_chart(grouped, width="stretch")
+    st.bar_chart(grouped, use_container_width=True)
 
-    st.dataframe(view, width="stretch", height=360)
+    st.dataframe(view, use_container_width=True, height=360)
 
 elif ss.df_loaded and ss.df_raw is not None:
     # RAW VIEW ONLY
@@ -207,7 +207,7 @@ elif ss.df_loaded and ss.df_raw is not None:
     view = ss.df_raw if choice == "All Products" else ss.df_raw[ss.df_raw[product_col].astype(str) == choice]
 
     st.write(f"Rows in selection: **{len(view):,}**")
-    st.dataframe(view.head(25), width="stretch")
+    st.dataframe(view.head(25), use_container_width=True)
 
 else:
     st.info("Click ‘Load Sample Data’ to get started.")
